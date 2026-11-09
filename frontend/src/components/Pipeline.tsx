@@ -1,5 +1,5 @@
-import { Check, ChevronRight, Loader2 } from "lucide-react";
-import { Fragment, type CSSProperties } from "react";
+import { Check } from "lucide-react";
+import type { CSSProperties } from "react";
 import { agentStyle } from "@/lib/agents";
 import type { AgentStatus, TeamMember } from "@/lib/types";
 
@@ -8,46 +8,51 @@ interface Props {
   statuses: Record<string, AgentStatus>;
 }
 
+const STATUS_LABEL: Record<AgentStatus, string> = {
+  idle: "Waiting",
+  working: "Working",
+  done: "Done",
+};
+
 export function Pipeline({ team, statuses }: Props) {
   return (
-    <div className="flex flex-col items-stretch gap-2 sm:flex-row">
+    <ol className="rounded-2xl border border-line bg-card p-4 shadow-card">
       {team.map((member, index) => {
         const status = statuses[member.key] ?? "idle";
         const style = agentStyle(member.key);
         const Icon = style.icon;
+        const last = index === team.length - 1;
         return (
-          <Fragment key={member.key}>
-            <article
-              style={{ "--ring": `${style.color}88`, borderColor: status === "idle" ? undefined : `${style.color}66` } as CSSProperties}
-              className={`relative flex-1 rounded-2xl border bg-panel/80 p-4 transition ${
-                status === "working" ? "animate-ring" : "border-line"
-              } ${status === "idle" ? "opacity-60" : ""}`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="grid size-10 place-items-center rounded-xl" style={{ background: `${style.color}1f`, color: style.color }}>
-                  <Icon className="size-5" />
-                </div>
-                {status === "working" && <Loader2 className="size-4 animate-spin" style={{ color: style.color }} />}
-                {status === "done" && (
-                  <span className="grid size-5 place-items-center rounded-full bg-emerald-500/15 text-emerald-400">
-                    <Check className="size-3" />
-                  </span>
-                )}
-              </div>
-              <h3 className="mt-3 text-sm font-semibold">{style.name}</h3>
-              <p className="text-xs font-medium" style={{ color: style.color }}>
-                {member.role}
-              </p>
-              <p className="mt-1.5 text-xs leading-snug text-muted">{style.blurb}</p>
-            </article>
-            {index < team.length - 1 && (
-              <div className="hidden items-center text-line sm:flex">
-                <ChevronRight className="size-5" />
-              </div>
+          <li key={member.key} className="relative flex gap-3.5 pb-5 last:pb-0">
+            {!last && (
+              <span
+                aria-hidden
+                className="absolute left-[19px] top-10 h-[calc(100%-2.5rem)] w-px transition-colors"
+                style={{ background: status === "done" ? style.color : "#e5dfd2" }}
+              />
             )}
-          </Fragment>
+            <span
+              style={{ "--ring": `${style.color}55`, background: status === "idle" ? "#f1ece0" : style.color } as CSSProperties}
+              className={`relative z-10 grid size-10 shrink-0 place-items-center rounded-full text-card transition ${
+                status === "working" ? "animate-ring" : ""
+              } ${status === "idle" ? "!text-muted" : ""}`}
+            >
+              {status === "done" ? <Check className="size-[18px]" /> : <Icon className="size-[18px]" />}
+            </span>
+            <div className="min-w-0 pt-0.5">
+              <div className="flex items-baseline gap-2">
+                <h3 className="text-sm font-semibold">{style.name}</h3>
+                <span className="text-xs text-muted">{member.role}</span>
+              </div>
+              <p className="mt-0.5 text-xs leading-snug text-muted">{style.blurb}</p>
+              <p className="mt-1.5 text-[11px] font-medium uppercase tracking-[0.12em]" style={{ color: status === "idle" ? "#a8a396" : style.color }}>
+                {STATUS_LABEL[status]}
+                {status === "working" && <span className="ml-1 inline-block animate-pulse">…</span>}
+              </p>
+            </div>
+          </li>
         );
       })}
-    </div>
+    </ol>
   );
 }

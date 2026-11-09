@@ -16,20 +16,20 @@ export function CodeView({ name, content }: { name: string; content: string }) {
 
   if (isMarkdown) {
     return (
-      <div className="doc px-6 py-5">
+      <div className="doc px-8 py-7">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
     );
   }
 
   return (
-    <div className="flex font-mono text-[12.5px] leading-[1.65]">
-      <div aria-hidden className="select-none border-r border-line/60 px-3 py-4 text-right text-muted/50">
+    <div className="flex font-mono text-[12.5px] leading-[1.7]">
+      <div aria-hidden className="select-none border-r border-line px-3 py-5 text-right text-muted/50">
         {content.split("\n").map((_, index) => (
           <div key={index}>{index + 1}</div>
         ))}
       </div>
-      <pre className="flex-1 overflow-x-auto px-4 py-4">
+      <pre className="flex-1 overflow-x-auto px-5 py-5">
         <code className="hljs" dangerouslySetInnerHTML={{ __html: html }} />
       </pre>
     </div>

@@ -1,11 +1,13 @@
 "use client";
 
-import { AlertTriangle, CircleCheck, Sparkles, Timer } from "lucide-react";
+import { AlertTriangle, CircleCheck, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ActivityFeed } from "@/components/ActivityFeed";
+import { BriefSummary } from "@/components/BriefSummary";
 import { Pipeline } from "@/components/Pipeline";
 import { RequirementsPanel } from "@/components/RequirementsPanel";
 import { Workspace } from "@/components/Workspace";
+import { agentStyle } from "@/lib/agents";
 import { fetchTeam } from "@/lib/api";
 import type { TeamMember } from "@/lib/types";
 import { useRun } from "@/lib/useRun";
@@ -28,8 +30,10 @@ export default function Home() {
   const { state, start, reset } = useRun();
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [offline, setOffline] = useState(false);
+  const [brief, setBrief] = useState("");
   const elapsed = useElapsed(state.startedAt, state.endedAt);
   const running = state.status === "running";
+  const idle = state.status === "idle";
 
   useEffect(() => {
     fetchTeam()
@@ -37,23 +41,53 @@ export default function Home() {
       .catch(() => setOffline(true));
   }, []);
 
-  return (
-    <>
-      <header className="flex items-center gap-3 border-b border-line/70 px-6 py-4">
-        <div className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-[#753991] to-[#209dd7] shadow-lg shadow-violet-900/30">
-          <Sparkles className="size-[18px] text-white" />
-        </div>
-        <div>
-          <h1 className="text-[15px] font-semibold leading-tight tracking-tight">AI Engineering Team</h1>
-          <p className="text-xs text-muted">Describe software. Watch the team build it.</p>
-        </div>
-      </header>
+  const run = (requirements: string) => {
+    setBrief(requirements);
+    start(requirements);
+  };
 
-      <main className="mx-auto grid max-w-[1400px] gap-6 p-6 lg:grid-cols-[380px_1fr]">
-        <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <RequirementsPanel running={running} canReset={state.status !== "idle"} onRun={start} onReset={reset} />
+  const errorBanner = state.error && (
+    <p className="flex items-start gap-2 rounded-xl border border-terracotta/30 bg-terracotta/5 p-3 text-sm text-terracotta">
+      <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+      <span className="break-words">{state.error}</span>
+    </p>
+  );
+
+  const header = (
+    <header className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5">
+      <div className="flex items-baseline gap-2.5">
+        <span className="font-display text-xl font-semibold tracking-tight">Engineering Team</span>
+        <span className="hidden text-xs text-muted sm:inline">AI engineers, working in the open</span>
+      </div>
+      {running && (
+        <span className="flex items-center gap-2 text-xs text-muted">
+          <span className="size-1.5 animate-pulse rounded-full bg-forest" />
+          {agentStyle(state.activeAgent).name} is working
+        </span>
+      )}
+    </header>
+  );
+
+  if (idle) {
+    return (
+      <>
+        {header}
+        <main className="mx-auto max-w-3xl px-6 pb-20 pt-14 sm:pt-20">
+          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.2em] text-ochre">Describe it. Watch it get built.</p>
+          <h1 className="text-balance text-center font-display text-4xl font-semibold leading-[1.1] tracking-tight sm:text-6xl">
+            A small team of engineers, on demand.
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-balance text-center text-base leading-relaxed text-muted">
+            Tell the team what you need. A lead designs it, a backend engineer builds it, and a test engineer proves it works,
+            while you watch every step.
+          </p>
+
+          <div className="mt-10">
+            <RequirementsPanel onRun={run} />
+          </div>
+          {errorBanner && <div className="mt-4">{errorBanner}</div>}
           {offline && (
-            <p className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-200">
+            <p className="mt-4 flex items-start gap-2 rounded-xl border border-ochre/30 bg-ochre/5 p-3 text-xs text-ochre">
               <AlertTriangle className="mt-0.5 size-4 shrink-0" />
               <span>
                 Backend not reachable. Start it from <code className="font-mono">backend/</code> with{" "}
@@ -61,38 +95,60 @@ export default function Home() {
               </span>
             </p>
           )}
+
+          <ul className="mt-14 grid grid-cols-1 gap-6 border-t border-line pt-8 sm:grid-cols-3">
+            {team.map((member) => {
+              const style = agentStyle(member.key);
+              return (
+                <li key={member.key}>
+                  <p className="text-sm font-semibold" style={{ color: style.color }}>
+                    {style.name}
+                  </p>
+                  <p className="text-xs text-muted">{member.role}</p>
+                  <p className="mt-1.5 text-sm leading-snug text-ink/70">{style.blurb}</p>
+                </li>
+              );
+            })}
+          </ul>
+        </main>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {header}
+      <main className="mx-auto grid max-w-[1400px] gap-5 px-6 pb-8 lg:h-[calc(100vh-5.5rem)] lg:grid-cols-[380px_1fr]">
+        <div className="flex min-h-0 flex-col gap-4">
+          <BriefSummary requirements={brief} running={running} onReset={reset} />
+          <Pipeline team={team} statuses={state.agents} />
+          <ActivityFeed feed={state.feed} running={running} />
         </div>
 
-        <div className="min-w-0 space-y-5">
-          <div className="flex min-h-7 items-center justify-between">
-            <h2 className="text-xs font-medium uppercase tracking-wider text-muted">The team</h2>
-            <div className="flex items-center gap-3 text-xs text-muted">
+        <div className="flex min-h-0 flex-col gap-3">
+          <div className="flex min-h-6 items-center justify-between text-xs">
+            <span className="text-muted">
+              {state.status === "finished" ? (
+                <span className={`flex items-center gap-1.5 font-medium ${state.testsPassed ? "text-forest" : "text-terracotta"}`}>
+                  <CircleCheck className="size-3.5" />
+                  {state.testsPassed ? "Build complete, all tests passing" : "Build finished with failing tests"}
+                </span>
+              ) : (
+                running && "Building…"
+              )}
+            </span>
+            <span className="flex items-center gap-4 font-mono text-muted">
+              {state.tokens && <span>{state.tokens.toLocaleString()} tokens</span>}
               {elapsed && (
-                <span className="flex items-center gap-1.5 font-mono">
+                <span className="flex items-center gap-1.5">
                   <Timer className="size-3.5" />
                   {elapsed}
                 </span>
               )}
-              {state.status === "finished" && (
-                <span className={`flex items-center gap-1.5 ${state.testsPassed ? "text-emerald-400" : "text-amber-300"}`}>
-                  <CircleCheck className="size-3.5" />
-                  {state.testsPassed ? "Build complete, tests passing" : "Build finished with failing tests"}
-                </span>
-              )}
-            </div>
+            </span>
           </div>
-
-          <Pipeline team={team} statuses={state.agents} />
-
-          {state.error && (
-            <p className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/5 p-3 text-sm text-red-200">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-              <span className="break-words">{state.error}</span>
-            </p>
-          )}
-
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,340px)_1fr]">
-            <ActivityFeed feed={state.feed} running={running} />
+          {errorBanner}
+          <div className="min-h-0 flex-1">
             <Workspace files={state.files} executions={state.executions} finished={state.status === "finished"} />
           </div>
         </div>

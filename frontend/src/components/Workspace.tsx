@@ -36,8 +36,8 @@ export function Workspace({ files, executions, finished }: Props) {
   const lastTest = [...executions].reverse().find((run) => run.file.startsWith("test"));
 
   return (
-    <section className="flex h-[520px] flex-col overflow-hidden rounded-2xl border border-line bg-panel/80">
-      <div className="flex items-center justify-between gap-2 border-b border-line pr-3">
+    <section className="flex min-h-[420px] flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-card lg:h-full">
+      <div className="flex items-center justify-between gap-2 border-b border-line bg-paper/60 pr-3">
         <div className="flex min-w-0 overflow-x-auto">
           {names.map((name) => {
             const Icon = name.endsWith(".md") ? FileText : FileCode2;
@@ -46,8 +46,8 @@ export function Workspace({ files, executions, finished }: Props) {
                 key={name}
                 type="button"
                 onClick={() => setSelected(name)}
-                className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3.5 py-3 text-xs transition ${
-                  name === active ? "border-accent text-white" : "border-transparent text-muted hover:text-white"
+                className={`flex shrink-0 items-center gap-1.5 border-b-2 px-4 py-3 text-xs transition ${
+                  name === active ? "border-forest bg-card font-medium text-forest" : "border-transparent text-muted hover:text-ink"
                 }`}
               >
                 <Icon className="size-3.5" />
@@ -55,13 +55,13 @@ export function Workspace({ files, executions, finished }: Props) {
               </button>
             );
           })}
-          {names.length === 0 && <span className="px-4 py-3 text-xs text-muted">Code</span>}
+          {names.length === 0 && <span className="px-4 py-3 text-xs text-muted">Files</span>}
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {lastTest && (
             <span
               className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${
-                lastTest.code === 0 ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
+                lastTest.code === 0 ? "bg-forest/10 text-forest" : "bg-terracotta/10 text-terracotta"
               }`}
             >
               {lastTest.code === 0 ? <CircleCheck className="size-3" /> : <CircleX className="size-3" />}
@@ -71,7 +71,7 @@ export function Workspace({ files, executions, finished }: Props) {
           {finished && (
             <a
               href={DOWNLOAD_URL}
-              className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-black transition hover:bg-white/90"
+              className="flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-xs font-medium text-card transition hover:bg-ink/85"
             >
               <Download className="size-3.5" />
               Download
@@ -80,20 +80,22 @@ export function Workspace({ files, executions, finished }: Props) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto">
+      <div className="min-h-0 flex-1 overflow-auto">
         {active ? (
           <CodeView name={active} content={content} />
         ) : (
-          <p className="grid h-full place-items-center px-6 text-center text-sm text-muted">
-            The code appears here, live, as each engineer writes it.
+          <p className="grid h-full min-h-[300px] place-items-center px-6 text-center font-display text-lg text-muted">
+            The code appears here, live,
+            <br />
+            as each engineer writes it.
           </p>
         )}
       </div>
 
       {lastTest?.output && (
-        <details className="border-t border-line bg-ink/60">
-          <summary className="cursor-pointer px-4 py-2 text-xs text-muted hover:text-white">Test output</summary>
-          <pre className="max-h-40 overflow-auto px-4 pb-3 font-mono text-[11.5px] leading-relaxed text-muted">{lastTest.output}</pre>
+        <details className="border-t border-line bg-paper/60">
+          <summary className="cursor-pointer px-4 py-2 text-xs text-muted hover:text-ink">Test output</summary>
+          <pre className="max-h-40 overflow-auto px-4 pb-3 font-mono text-[11.5px] leading-relaxed text-ink/70">{lastTest.output}</pre>
         </details>
       )}
     </section>
