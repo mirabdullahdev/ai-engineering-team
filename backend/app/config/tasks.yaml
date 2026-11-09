@@ -7,14 +7,17 @@ design_task:
 
     Output a markdown document with these sections:
     1. Overview: the system in three sentences.
-    2. Files: every source file to be created. Do not list test files; the test engineer writes those.
+    2. Files: every source file to be created and its owner (backend_engineer or frontend_engineer),
+       with paths such as `src/app/page.tsx` and `src/lib/rules.ts` for the frontend. Do not list test files; the test engineer writes those.
     3. Backend interface: each class and function with a typed signature, a one-line contract,
        validation rules, and the exceptions raised.
-    4. Test plan: the behaviours and edge cases the test engineer must cover.
+    4. Frontend: the screens and components of the Next.js app, the files they live in, what the user can do on each, the
+       business rules it must enforce in TypeScript, and the exact validation messages to show.
+    5. Test plan: the behaviours and edge cases the test engineer must cover in the backend.
 
     Do not write implementation code, only signatures and contracts.
   expected_output: >
-    A complete markdown design with the four sections above and no implementation code.
+    A complete markdown design with the five sections above and no implementation code.
   agent: engineering_lead
 
 code_task:
@@ -33,9 +36,25 @@ code_task:
   context:
     - design_task
 
+frontend_task:
+  description: >
+    Build the Next.js interface described in the Frontend section of the design.
+
+    Requirements:
+    {requirements}
+
+    Edit the starter project with your web tools, put a first working version of the page in place early,
+    then refine it. Run Check Web App and fix every issue it reports until it returns OK.
+    The app must enforce the same business rules as the backend, in TypeScript.
+  expected_output: >
+    A complete, polished Next.js app in src/ that passes Check Web App.
+  agent: frontend_engineer
+  context:
+    - design_task
+
 test_task:
   description: >
-    Write and run unit tests for the backend, fixing backend defects until every test passes.
+    Write and run unit tests for the Python backend, fixing backend defects until every test passes.
 
     Requirements:
     {requirements}
@@ -65,3 +84,18 @@ fix_task:
   expected_output: >
     The backend fixed in the sandbox, with the previously failing tests now passing.
   agent: backend_engineer
+
+fix_web_task:
+  description: >
+    The Next.js app has errors. Fix them so it type-checks and renders.
+
+    Requirements:
+    {requirements}
+
+    Current errors:
+    {web_errors}
+
+    Read the files involved, fix the real cause, and run Check Web App until it returns OK.
+  expected_output: >
+    The Next.js app fixed so that Check Web App returns OK.
+  agent: frontend_engineer

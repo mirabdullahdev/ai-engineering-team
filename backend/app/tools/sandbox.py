@@ -20,7 +20,7 @@ def reset_sandbox() -> None:
         shutil.rmtree(entry) if entry.is_dir() else entry.unlink()
 
 
-def _clean_env() -> dict[str, str]:
+def clean_env() -> dict[str, str]:
     return {k: v for k, v in os.environ.items() if not any(m in k.upper() for m in SECRET_MARKERS)}
 
 
@@ -33,7 +33,7 @@ def _execute(arguments: list[str]) -> tuple[int, str, str]:
             text=True,
             encoding="utf-8",
             timeout=EXEC_TIMEOUT_SECONDS,
-            env=_clean_env(),
+            env=clean_env(),
         )
     except subprocess.TimeoutExpired:
         return -1, "", f"Timed out after {EXEC_TIMEOUT_SECONDS} seconds."
