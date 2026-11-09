@@ -150,7 +150,7 @@ export default function Home() {
           </div>
           {errorBanner}
           <div className="min-h-0 flex-1">
-            <Workspace files={state.files} executions={state.executions} previewUrl={state.previewUrl} finished={state.status === "finished"} />
+            <Workspace fileText={state.fileText} streaming={state.streaming} executions={state.executions} previewUrl={state.previewUrl} finished={state.status === "finished"} />
           </div>
         </div>
       </main>

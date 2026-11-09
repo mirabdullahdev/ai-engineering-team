@@ -52,6 +52,20 @@ body {
   background: #d1c0ef;
 }
 
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.stream-caret {
+  display: inline-block;
+  width: 7px;
+  height: 1.15em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: #7140cf;
+  animation: blink 1s steps(2, start) infinite;
+}
+
 .hljs { background: transparent; color: #282836; }
 .hljs-keyword, .hljs-selector-tag, .hljs-built_in { color: #7140cf; }
 .hljs-string, .hljs-attr { color: #1f6f4a; }

@@ -22,7 +22,7 @@ function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-export function CodeView({ name, content }: { name: string; content: string }) {
+export function CodeView({ name, content, caret }: { name: string; content: string; caret: boolean }) {
   const isMarkdown = name.endsWith(".md");
   const html = useMemo(() => {
     if (isMarkdown) return "";
@@ -46,7 +46,7 @@ export function CodeView({ name, content }: { name: string; content: string }) {
         ))}
       </div>
       <pre className="flex-1 overflow-x-auto px-5 py-5">
-        <code className="hljs" dangerouslySetInnerHTML={{ __html: html }} />
+        <code className="hljs" dangerouslySetInnerHTML={{ __html: caret ? `${html}<span class="stream-caret"></span>` : html }} />
       </pre>
     </div>
   );
