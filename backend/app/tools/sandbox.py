@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from crewai.tools import tool
@@ -10,34 +11,21 @@ from app.runs import emit
 SANDBOX_DIR = Path(__file__).resolve().parents[2] / "sandbox"
 EXEC_TIMEOUT_SECONDS = 120
 SECRET_MARKERS = ("KEY", "TOKEN", "SECRET", "PASSWORD")
-ENV_BLOCKLIST = {"VIRTUAL_ENV"}
-SANDBOX_PACKAGES = ["gradio", "pandas<3"]
-PROJECT_ENTRIES = {"pyproject.toml", "uv.lock", ".venv"}
+INTERPRETER = Path(sys.base_prefix) / ("python.exe" if os.name == "nt" else "bin/python")
 
 
 def reset_sandbox() -> None:
     SANDBOX_DIR.mkdir(exist_ok=True)
-    if not (SANDBOX_DIR / "pyproject.toml").exists():
-        subprocess.run(["uv", "init", "--bare", "--no-workspace", "--python", "3.12"], cwd=SANDBOX_DIR, check=True)
-        subprocess.run(["uv", "add", *SANDBOX_PACKAGES], cwd=SANDBOX_DIR, check=True)
     for entry in SANDBOX_DIR.iterdir():
-        if entry.name in PROJECT_ENTRIES:
-            continue
         shutil.rmtree(entry) if entry.is_dir() else entry.unlink()
 
 
 def _clean_env() -> dict[str, str]:
-    return {
-        key: value
-        for key, value in os.environ.items()
-        if key not in ENV_BLOCKLIST and not any(marker in key.upper() for marker in SECRET_MARKERS)
-    }
+    return {k: v for k, v in os.environ.items() if not any(m in k.upper() for m in SECRET_MARKERS)}
 
 
 def _resolve(filename: str) -> Path | None:
     if not filename or filename.startswith(".") or "/" in filename or "\\" in filename:
-        return None
-    if filename in PROJECT_ENTRIES:
         return None
     return SANDBOX_DIR / filename
 
@@ -45,7 +33,7 @@ def _resolve(filename: str) -> Path | None:
 @tool("List Sandbox Files")
 def list_sandbox_files() -> str:
     """List the filenames currently in the sandbox directory."""
-    names = sorted(p.name for p in SANDBOX_DIR.iterdir() if p.is_file() and p.name not in PROJECT_ENTRIES)
+    names = sorted(p.name for p in SANDBOX_DIR.iterdir() if p.is_file())
     emit("tool", tool="list_files", detail=f"{len(names)} files")
     return "\n".join(names) or "The sandbox is empty."
 
@@ -74,14 +62,15 @@ def write_sandbox_file(filename: str, content: str) -> str:
 @tool("Run Sandbox Python File")
 def run_sandbox_python(filename: str) -> str:
     """Run a Python file in the sandbox and return its exit code, stdout and stderr.
-    unittest reports results on stderr. Args: filename, e.g. "test_backend.py"."""
+    Only the standard library is available. unittest reports results on stderr.
+    Args: filename, e.g. "test_backend.py"."""
     path = _resolve(filename)
     if path is None or not path.is_file():
         return f"No such file in the sandbox: {filename}"
     emit("tool", tool="run_python", detail=filename)
     try:
         result = subprocess.run(
-            ["uv", "run", "python", filename],
+            [str(INTERPRETER), "-E", "-s", "-X", "utf8", filename],
             cwd=SANDBOX_DIR,
             capture_output=True,
             text=True,
@@ -90,8 +79,9 @@ def run_sandbox_python(filename: str) -> str:
             env=_clean_env(),
         )
     except subprocess.TimeoutExpired:
-        emit("exec", file=filename, code=-1, output=f"Timed out after {EXEC_TIMEOUT_SECONDS} seconds.")
-        return f"Timed out after {EXEC_TIMEOUT_SECONDS} seconds."
+        message = f"Timed out after {EXEC_TIMEOUT_SECONDS} seconds."
+        emit("exec", file=filename, code=-1, output=message)
+        return message
     output = "\n".join(part for part in (result.stdout, result.stderr) if part).strip()
     emit("exec", file=filename, code=result.returncode, output=output[-4000:])
     return (

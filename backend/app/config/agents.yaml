@@ -6,8 +6,8 @@ engineering_lead:
 
     Constraints you must design within:
     - Every engineer works in one shared directory. All files are flat: no subdirectories, no packages.
-    - Only the Python standard library and gradio are available.
-    - Gradio 6: pass `theme=` and `css=` to `demo.launch(...)`, never to `gr.Blocks(...)`.
+    - Only the Python standard library is available. No third-party packages.
+    - The product is a Python backend with unit tests. Do not design any UI, web server or command-line interface.
 
     Quality bar for the design:
     - Name every module, class, and function with full type-annotated signatures and a one-line contract.

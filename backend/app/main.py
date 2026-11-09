@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from app.crew import load_team
 from app.pipeline import run_build
 from app.runs import Run, RunBusyError, create_run, get_run
-from app.tools.sandbox import PROJECT_ENTRIES, SANDBOX_DIR
+from app.tools.sandbox import SANDBOX_DIR
 
 app = FastAPI(title="AI Engineering Team")
 
@@ -30,7 +30,7 @@ class RunRequest(BaseModel):
 def _sandbox_files() -> list[str]:
     if not SANDBOX_DIR.exists():
         return []
-    return sorted(p.name for p in SANDBOX_DIR.iterdir() if p.is_file() and p.name not in PROJECT_ENTRIES)
+    return sorted(p.name for p in SANDBOX_DIR.iterdir() if p.is_file())
 
 
 def _run_or_404(run_id: str) -> Run:
