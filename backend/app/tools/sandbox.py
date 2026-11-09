@@ -5,6 +5,8 @@ from pathlib import Path
 
 from crewai.tools import tool
 
+from app.runs import emit
+
 SANDBOX_DIR = Path(__file__).resolve().parents[2] / "sandbox"
 EXEC_TIMEOUT_SECONDS = 120
 SECRET_MARKERS = ("KEY", "TOKEN", "SECRET", "PASSWORD")
@@ -44,12 +46,14 @@ def _resolve(filename: str) -> Path | None:
 def list_sandbox_files() -> str:
     """List the filenames currently in the sandbox directory."""
     names = sorted(p.name for p in SANDBOX_DIR.iterdir() if p.is_file() and p.name not in PROJECT_ENTRIES)
+    emit("tool", tool="list_files", detail=f"{len(names)} files")
     return "\n".join(names) or "The sandbox is empty."
 
 
 @tool("Read Sandbox File")
 def read_sandbox_file(filename: str) -> str:
     """Read a file from the sandbox. Args: filename, e.g. "backend.py"."""
+    emit("tool", tool="read_file", detail=filename)
     path = _resolve(filename)
     if path is None or not path.is_file():
         return f"No such file in the sandbox: {filename}"
@@ -63,6 +67,7 @@ def write_sandbox_file(filename: str, content: str) -> str:
     if path is None:
         return "Invalid filename: use a plain filename with no directories."
     path.write_text(content, encoding="utf-8")
+    emit("file", name=filename, size=len(content))
     return f"Wrote {len(content)} characters to {filename}."
 
 
@@ -73,6 +78,7 @@ def run_sandbox_python(filename: str) -> str:
     path = _resolve(filename)
     if path is None or not path.is_file():
         return f"No such file in the sandbox: {filename}"
+    emit("tool", tool="run_python", detail=filename)
     try:
         result = subprocess.run(
             ["uv", "run", "python", filename],
@@ -84,7 +90,10 @@ def run_sandbox_python(filename: str) -> str:
             env=_clean_env(),
         )
     except subprocess.TimeoutExpired:
+        emit("exec", file=filename, code=-1, output=f"Timed out after {EXEC_TIMEOUT_SECONDS} seconds.")
         return f"Timed out after {EXEC_TIMEOUT_SECONDS} seconds."
+    output = "\n".join(part for part in (result.stdout, result.stderr) if part).strip()
+    emit("exec", file=filename, code=result.returncode, output=output[-4000:])
     return (
         f"Exit code: {result.returncode}\n\n"
         f"--- stdout ---\n{result.stdout or '(empty)'}\n\n"

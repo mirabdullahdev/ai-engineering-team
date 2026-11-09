@@ -16,4 +16,19 @@ design_task:
   expected_output: >
     A complete markdown design with the four sections above and no implementation code.
   agent: engineering_lead
-  output_file: outputs/design.md
+
+code_task:
+  description: >
+    Implement the backend described in the design.
+
+    Requirements:
+    {requirements}
+
+    Write the modules with your sandbox tools, then run a smoke script that exercises the main flows
+    and at least two error paths. Fix any failure before finishing.
+  expected_output: >
+    The backend module(s) saved in the sandbox, matching the design's public interface, with a
+    successful smoke run.
+  agent: backend_engineer
+  context:
+    - design_task
