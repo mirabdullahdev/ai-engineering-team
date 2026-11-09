@@ -60,21 +60,19 @@ export function Workspace({ files, executions, previewUrl, finished }: Props) {
   const lastTest = [...executions].reverse().find((run) => run.file.startsWith("test"));
   const itemClass = (isActive: boolean) =>
     `flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs transition ${
-      isActive ? "bg-forest/10 font-medium text-forest" : "text-ink/75 hover:bg-ink/5"
+      isActive ? "bg-primary/10 font-medium text-primary" : "text-ink/75 hover:bg-ink/5"
     }`;
 
   return (
-    <section className="flex min-h-[460px] flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-card lg:h-full">
-      <div className="flex items-center justify-between gap-2 border-b border-line bg-paper/60 px-4 py-2.5">
+    <section className="flex min-h-[460px] flex-col overflow-hidden bg-card lg:h-full">
+      <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-2.5">
         <span className="truncate text-xs font-medium text-ink/80">
           {active === PREVIEW ? "Live preview" : active ? labelOf(active) : "Workspace"}
         </span>
         <div className="flex shrink-0 items-center gap-2">
           {lastTest && (
             <span
-              className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium ${
-                lastTest.code === 0 ? "bg-forest/10 text-forest" : "bg-terracotta/10 text-terracotta"
-              }`}
+              className={`flex items-center gap-1.5 text-xs font-medium ${lastTest.code === 0 ? "text-primary" : "text-terracotta"}`}
             >
               {lastTest.code === 0 ? <CircleCheck className="size-3" /> : <CircleX className="size-3" />}
               {lastTest.code === 0 ? "Tests passing" : "Tests failing"}
@@ -93,7 +91,7 @@ export function Workspace({ files, executions, previewUrl, finished }: Props) {
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <nav className="hidden w-52 shrink-0 overflow-y-auto border-r border-line bg-paper/40 p-3 sm:block">
+        <nav className="hidden w-52 shrink-0 overflow-y-auto border-r border-line p-3 sm:block">
           {previewUrl && (
             <button type="button" onClick={() => setSelected(PREVIEW)} className={`mb-3 ${itemClass(active === PREVIEW)}`}>
               <Globe className="size-3.5 shrink-0" />
@@ -103,7 +101,7 @@ export function Workspace({ files, executions, previewUrl, finished }: Props) {
           {groups.length === 0 && !previewUrl && <p className="px-2 text-xs text-muted">Files appear here as they are written.</p>}
           {groups.map((group) => (
             <div key={group.title} className="mb-3">
-              <p className="mb-1 px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">{group.title}</p>
+              <p className="mb-1 px-2.5 text-xs font-semibold text-muted">{group.title}</p>
               {group.names.map((name) => {
                 const Icon = name.endsWith(".md") ? FileText : FileCode2;
                 return (
@@ -153,7 +151,7 @@ export function Workspace({ files, executions, previewUrl, finished }: Props) {
               {active ? (
                 <CodeView name={active} content={content} />
               ) : (
-                <p className="grid h-full min-h-[300px] place-items-center px-6 text-center font-display text-lg text-muted">
+                <p className="grid h-full min-h-[300px] place-items-center px-6 text-center text-lg text-muted">
                   The code and a live preview appear here
                   <br />
                   as the engineers work.
@@ -163,7 +161,7 @@ export function Workspace({ files, executions, previewUrl, finished }: Props) {
           )}
 
           {active !== PREVIEW && lastTest?.output && (
-            <details className="border-t border-line bg-paper/60">
+            <details className="border-t border-line">
               <summary className="cursor-pointer px-4 py-2 text-xs text-muted hover:text-ink">Test output</summary>
               <pre className="max-h-40 overflow-auto px-4 pb-3 font-mono text-[11.5px] leading-relaxed text-ink/70">{lastTest.output}</pre>
             </details>

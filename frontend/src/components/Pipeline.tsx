@@ -16,7 +16,7 @@ const STATUS_LABEL: Record<AgentStatus, string> = {
 
 export function Pipeline({ team, statuses }: Props) {
   return (
-    <ol className="rounded-2xl border border-line bg-card p-4 shadow-card">
+    <ol className="card-tri p-5">
       {team.map((member, index) => {
         const status = statuses[member.key] ?? "idle";
         const style = agentStyle(member.key);
@@ -28,11 +28,11 @@ export function Pipeline({ team, statuses }: Props) {
               <span
                 aria-hidden
                 className="absolute left-[19px] top-10 h-[calc(100%-2.5rem)] w-px transition-colors"
-                style={{ background: status === "done" ? style.color : "#e5dfd2" }}
+                style={{ background: status === "done" ? style.color : "#d1c0ef" }}
               />
             )}
             <span
-              style={{ "--ring": `${style.color}55`, background: status === "idle" ? "#f1ece0" : style.color } as CSSProperties}
+              style={{ "--ring": `${style.color}55`, background: status === "idle" ? "#e0d5f4" : style.color } as CSSProperties}
               className={`relative z-10 grid size-10 shrink-0 place-items-center rounded-full text-card transition ${
                 status === "working" ? "animate-ring" : ""
               } ${status === "idle" ? "!text-muted" : ""}`}
@@ -44,7 +44,7 @@ export function Pipeline({ team, statuses }: Props) {
                 <h3 className="text-sm font-semibold">{style.name}</h3>
                 <span className="text-xs text-muted">{member.role}</span>
               </div>
-              <p className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.12em]" style={{ color: status === "idle" ? "#a8a396" : style.color }}>
+              <p className="mt-0.5 text-xs font-medium" style={{ color: status === "idle" ? "#9d97b4" : style.color }}>
                 {STATUS_LABEL[status]}
                 {status === "working" && <span className="ml-1 inline-block animate-pulse">…</span>}
               </p>

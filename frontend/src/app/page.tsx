@@ -56,12 +56,11 @@ export default function Home() {
   const header = (
     <header className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5">
       <div className="flex items-baseline gap-2.5">
-        <span className="font-display text-xl font-semibold tracking-tight">Engineering Team</span>
-        <span className="hidden text-xs text-muted sm:inline">AI engineers, working in the open</span>
+        <span className="text-xl font-semibold tracking-tight">Engineering Team</span>
       </div>
       {running && (
         <span className="flex items-center gap-2 text-xs text-muted">
-          <span className="size-1.5 animate-pulse rounded-full bg-forest" />
+          <span className="size-1.5 animate-pulse rounded-full bg-primary" />
           {agentStyle(state.activeAgent).name} is working
         </span>
       )}
@@ -73,9 +72,8 @@ export default function Home() {
       <>
         {header}
         <main className="mx-auto max-w-3xl px-6 pb-20 pt-14 sm:pt-20">
-          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.2em] text-ochre">Describe it. Watch it get built.</p>
-          <h1 className="text-balance text-center font-display text-4xl font-semibold leading-[1.1] tracking-tight sm:text-6xl">
-            A small team of engineers, on demand.
+          <h1 className="text-balance text-center text-4xl font-semibold leading-[1.1] tracking-tight text-primary sm:text-6xl">
+            Your team of Software Engineers
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-balance text-center text-base leading-relaxed text-muted">
             Tell the team what you need. A lead designs it, engineers build the backend and the interface, and a test engineer
@@ -96,16 +94,15 @@ export default function Home() {
             </p>
           )}
 
-          <ul className="mt-14 grid grid-cols-1 gap-6 border-t border-line pt-8 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {team.map((member) => {
               const style = agentStyle(member.key);
               return (
-                <li key={member.key}>
-                  <p className="text-sm font-semibold" style={{ color: style.color }}>
-                    {style.name}
+                <li key={member.key} className="card-tri p-6">
+                  <p className="text-lg font-semibold text-primary">
+                    {style.name}, {member.role}
                   </p>
-                  <p className="text-xs text-muted">{member.role}</p>
-                  <p className="mt-1.5 text-sm leading-snug text-ink/70">{style.blurb}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-ink/85">{style.blurb}</p>
                 </li>
               );
             })}
@@ -122,14 +119,14 @@ export default function Home() {
         <div className="flex min-h-0 flex-col gap-4 lg:overflow-y-auto">
           <BriefSummary requirements={brief} running={running} onReset={reset} />
           <Pipeline team={team} statuses={state.agents} />
-          <ActivityFeed feed={state.feed} running={running} />
+          <ActivityFeed feed={state.feed} />
         </div>
 
         <div className="flex min-h-0 flex-col gap-3">
           <div className="flex min-h-6 items-center justify-between text-xs">
             <span className="text-muted">
               {state.status === "finished" ? (
-                <span className={`flex items-center gap-1.5 font-medium ${state.testsPassed && state.webOk ? "text-forest" : "text-terracotta"}`}>
+                <span className={`flex items-center gap-1.5 font-medium ${state.testsPassed && state.webOk ? "text-primary" : "text-terracotta"}`}>
                   <CircleCheck className="size-3.5" />
                   {state.testsPassed && state.webOk
                     ? "Build complete, tests passing, app running"

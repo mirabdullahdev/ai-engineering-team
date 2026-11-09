@@ -8,42 +8,70 @@ html {
 
 body {
   min-height: 100vh;
-  color: #1c1b18;
-  background:
-    radial-gradient(1100px 520px at 50% -12%, rgb(176 125 14 / 0.1), transparent 65%),
-    #f6f2ea;
+  color: #282836;
+  background: #f4f0fa;
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: rgb(31 77 58 / 0.18);
+  background: rgb(113 64 207 / 0.2);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #d6cfbf transparent;
+  scrollbar-color: #cdbfe9 transparent;
 }
 
-.hljs { background: transparent; color: #2b2a26; }
-.hljs-keyword, .hljs-selector-tag, .hljs-built_in { color: #9a3412; }
+.card-tri {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #ece4f9;
+}
+
+.card-tri::before,
+.card-tri::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.card-tri::before {
+  width: 96px;
+  height: 96px;
+  background: #e3d4f6;
+}
+
+.card-tri::after {
+  width: 52px;
+  height: 52px;
+  background: #d1c0ef;
+}
+
+.hljs { background: transparent; color: #282836; }
+.hljs-keyword, .hljs-selector-tag, .hljs-built_in { color: #7140cf; }
 .hljs-string, .hljs-attr { color: #1f6f4a; }
 .hljs-title, .hljs-title.function_, .hljs-title.class_ { color: #26466d; }
 .hljs-number, .hljs-literal { color: #a16207; }
-.hljs-comment { color: #9a9486; font-style: italic; }
-.hljs-meta, .hljs-params { color: #5c574d; }
+.hljs-comment { color: #8f89a6; font-style: italic; }
+.hljs-meta, .hljs-params { color: #5c5675; }
 
-.doc h1 { font-family: var(--font-display); font-size: 1.7rem; font-weight: 600; margin: 0 0 1rem; letter-spacing: -0.01em; }
-.doc h2 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; margin: 1.8rem 0 0.6rem; }
+.doc h1 { font-size: 1.6rem; font-weight: 600; margin: 0 0 1rem; letter-spacing: -0.01em; color: #7140cf; }
+.doc h2 { font-size: 1.2rem; font-weight: 600; margin: 1.8rem 0 0.6rem; color: #7140cf; }
 .doc h3 { font-size: 0.95rem; font-weight: 600; margin: 1.3rem 0 0.4rem; }
-.doc p, .doc li { color: #4a463e; line-height: 1.7; font-size: 0.92rem; }
+.doc p, .doc li { color: #3a3850; line-height: 1.7; font-size: 0.92rem; }
 .doc ul, .doc ol { padding-left: 1.25rem; margin: 0.4rem 0 0.9rem; }
 .doc ul { list-style: disc; }
 .doc ol { list-style: decimal; }
-.doc strong { color: #1c1b18; font-weight: 600; }
-.doc code { font-family: var(--font-geist-mono); font-size: 0.82em; background: #efe9db; padding: 0.1rem 0.35rem; border-radius: 5px; color: #7a3412; }
-.doc pre { background: #fbf8f1; border: 1px solid #e5dfd2; border-radius: 10px; padding: 0.9rem 1rem; overflow-x: auto; margin: 0.8rem 0; }
-.doc pre code { background: none; padding: 0; color: #2b2a26; }
+.doc strong { color: #282836; font-weight: 600; }
+.doc code { font-family: var(--font-geist-mono); font-size: 0.82em; background: #e1d6f5; padding: 0.1rem 0.35rem; border-radius: 5px; color: #5b2fb3; }
+.doc pre { background: #f6f2fc; border: 1px solid #d9cef0; padding: 0.9rem 1rem; overflow-x: auto; margin: 0.8rem 0; }
+.doc pre code { background: none; padding: 0; color: #282836; }
 .doc table { width: 100%; border-collapse: collapse; margin: 0.9rem 0; font-size: 0.85rem; }
-.doc th, .doc td { border: 1px solid #e5dfd2; padding: 0.45rem 0.7rem; text-align: left; }
-.doc th { background: #f3eee2; }
-.doc hr { border-color: #e5dfd2; margin: 1.4rem 0; }
+.doc th, .doc td { border: 1px solid #d9cef0; padding: 0.45rem 0.7rem; text-align: left; }
+.doc th { background: #e3d9f6; }
+.doc hr { border-color: #d9cef0; margin: 1.4rem 0; }

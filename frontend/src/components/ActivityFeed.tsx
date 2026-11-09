@@ -37,7 +37,7 @@ function Row({ item }: { item: FeedItem }) {
   );
 }
 
-export function ActivityFeed({ feed, running }: { feed: FeedItem[]; running: boolean }) {
+export function ActivityFeed({ feed }: { feed: FeedItem[] }) {
   const end = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,12 +45,8 @@ export function ActivityFeed({ feed, running }: { feed: FeedItem[]; running: boo
   }, [feed.length]);
 
   return (
-    <section className="flex min-h-[220px] flex-1 flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-card">
-      <h2 className="flex items-center gap-2 border-b border-line px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-        Activity
-        {running && <span className="size-1.5 animate-pulse rounded-full bg-forest" />}
-      </h2>
-      <div className="flex-1 overflow-y-auto px-4">
+    <section className="card-tri flex min-h-[220px] flex-1 flex-col">
+      <div className="flex-1 overflow-y-auto px-5 py-2">
         <ul className="divide-y divide-line/60">
           {feed.map((item) => (
             <Row key={item.id} item={item} />
