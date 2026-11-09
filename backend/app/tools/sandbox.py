@@ -75,7 +75,7 @@ def write_sandbox_file(filename: str, content: str) -> str:
     if path is None:
         return "Invalid filename: use a plain filename with no directories."
     path.write_text(content, encoding="utf-8")
-    emit("file", name=filename, size=len(content))
+    emit("file", name=filename, size=len(content), content=content)
     return f"Wrote {len(content)} characters to {filename}."
 
 

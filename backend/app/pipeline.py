@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 from app.crew import EngineeringTeam, load_task_order
 from app.runs import Run
+from app.streaming import install_streaming
 from app.tools.sandbox import SANDBOX_DIR, reset_sandbox, run_test_suite
 from app.tools.web import (
     PREVIEW_URL,
@@ -18,6 +19,7 @@ from app.tools.web import (
 )
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+install_streaming()
 
 TASK_ORDER = load_task_order()
 SAVED_OUTPUTS = {"design_task": "design.md", "test_task": "test_summary.md"}
@@ -41,7 +43,7 @@ def run_build(run: Run, requirements: str) -> None:
         raw = str(getattr(output, "raw", output))
         if task_name in SAVED_OUTPUTS:
             (SANDBOX_DIR / SAVED_OUTPUTS[task_name]).write_text(raw, encoding="utf-8")
-            run.emit("file", name=SAVED_OUTPUTS[task_name], size=len(raw))
+            run.emit("file", name=SAVED_OUTPUTS[task_name], size=len(raw), content=raw)
         run.emit("task_done", agent=agent_key, summary=raw[:600])
         completed += 1
         if completed < len(TASK_ORDER):
@@ -69,6 +71,8 @@ def run_build(run: Run, requirements: str) -> None:
     def announce_preview() -> None:
         if preview.wait_until_ready():
             run.emit("preview_ready", url=PREVIEW_URL)
+        else:
+            run.emit("tool", tool="setup", detail=f"the preview server did not start: {preview.recent_log()}")
 
     try:
         reset_sandbox()

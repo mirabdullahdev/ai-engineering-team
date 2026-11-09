@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from crewai import Agent, Crew, Process, Task
+from crewai import LLM, Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from app.tools.sandbox import sandbox_tools
@@ -14,6 +14,12 @@ FIX_TASK = "fix_task"
 FIX_WEB_TASK = "fix_web_task"
 
 Callback = Callable[[Any], None] | None
+
+
+def build_agent(config: dict[str, Any], **kwargs: Any) -> Agent:
+    settings = dict(config)
+    llm = LLM(model=settings.pop("llm"), stream=True)
+    return Agent(config=settings, llm=llm, **kwargs)
 
 
 def load_team() -> list[dict[str, str]]:
@@ -37,19 +43,19 @@ class EngineeringTeam:
 
     @agent
     def engineering_lead(self) -> Agent:
-        return Agent(config=self.agents_config["engineering_lead"], verbose=True)
+        return build_agent(self.agents_config["engineering_lead"], verbose=True)
 
     @agent
     def backend_engineer(self) -> Agent:
-        return Agent(config=self.agents_config["backend_engineer"], tools=sandbox_tools, verbose=True)
+        return build_agent(self.agents_config["backend_engineer"], tools=sandbox_tools, verbose=True)
 
     @agent
     def frontend_engineer(self) -> Agent:
-        return Agent(config=self.agents_config["frontend_engineer"], tools=web_tools, verbose=True)
+        return build_agent(self.agents_config["frontend_engineer"], tools=web_tools, verbose=True)
 
     @agent
     def test_engineer(self) -> Agent:
-        return Agent(config=self.agents_config["test_engineer"], tools=sandbox_tools, verbose=True)
+        return build_agent(self.agents_config["test_engineer"], tools=sandbox_tools, verbose=True)
 
     @task
     def design_task(self) -> Task:

@@ -1,6 +1,7 @@
 import atexit
 import os
 import shutil
+import socket
 import subprocess
 import threading
 import time
@@ -39,6 +40,12 @@ def _tool_path(name: str) -> str:
     return path
 
 
+def port_in_use(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.settimeout(0.5)
+        return probe.connect_ex(("127.0.0.1", port)) == 0
+
+
 def ensure_dependencies() -> None:
     if (WEB_DIR / "node_modules").is_dir():
         return
@@ -57,6 +64,11 @@ def ensure_dependencies() -> None:
 def reset_web_src() -> None:
     shutil.rmtree(SRC_DIR, ignore_errors=True)
     shutil.copytree(TEMPLATE_SRC, SRC_DIR)
+
+
+def display_name(path: str) -> str | None:
+    target = resolve_source(path)
+    return None if target is None else f"web/{target.relative_to(WEB_DIR).as_posix()}"
 
 
 def list_source_files() -> list[str]:
@@ -88,6 +100,8 @@ class PreviewServer:
 
     def start(self) -> None:
         self.stop()
+        if port_in_use(PREVIEW_PORT):
+            raise WebSetupError(f"Port {PREVIEW_PORT} is already in use. Stop whatever is using it and try again.")
         shutil.rmtree(WEB_DIR / ".next", ignore_errors=True)
         with self._lock:
             self._lines.clear()
@@ -129,6 +143,10 @@ class PreviewServer:
                 return True
             time.sleep(1)
         return False
+
+    def recent_log(self, count: int = 8) -> str:
+        with self._lock:
+            return "\n".join(list(self._lines)[-count:])
 
     def new_log_lines(self) -> list[str]:
         with self._lock:
@@ -216,7 +234,7 @@ def write_web_file(path: str, content: str) -> str:
         return "Invalid path: use a .ts, .tsx or .css file under src/, for example src/app/page.tsx."
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
-    emit("file", name=f"web/{target.relative_to(WEB_DIR).as_posix()}", size=len(content))
+    emit("file", name=f"web/{target.relative_to(WEB_DIR).as_posix()}", size=len(content), content=content)
     return f"Wrote {len(content)} characters to {target.relative_to(WEB_DIR).as_posix()}."
 
 
