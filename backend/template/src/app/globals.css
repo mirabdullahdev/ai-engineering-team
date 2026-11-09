@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: 247 245 240;
+  --card: 255 255 255;
+  --ink: 29 29 27;
+  --muted: 120 116 106;
+  --line: 231 226 214;
+  --accent: 31 77 58;
+  --danger: 180 83 42;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  min-height: 100vh;
+  background: rgb(var(--paper));
+  color: rgb(var(--ink));
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
