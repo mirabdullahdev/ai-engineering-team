@@ -1,0 +1,19 @@
+design_task:
+  description: >
+    Produce the engineering design for the following requirements.
+
+    Requirements:
+    {requirements}
+
+    Output a markdown document with these sections:
+    1. Overview: the system in three sentences.
+    2. Files: every file to be created.
+    3. Backend interface: each class and function with a typed signature, a one-line contract,
+       validation rules, and the exceptions raised.
+    4. Test plan: the behaviours and edge cases to cover.
+
+    Do not write implementation code, only signatures and contracts.
+  expected_output: >
+    A complete markdown design with the four sections above and no implementation code.
+  agent: engineering_lead
+  output_file: outputs/design.md
