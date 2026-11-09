@@ -12,6 +12,7 @@ from app.crew import load_team
 from app.pipeline import run_build
 from app.runs import Run, RunBusyError, create_run, get_run
 from app.tools.sandbox import SANDBOX_DIR
+from app.tools.web import PREVIEW_URL, WEB_DIR, list_source_files, preview
 
 app = FastAPI(title="AI Engineering Team")
 
@@ -27,10 +28,18 @@ class RunRequest(BaseModel):
     requirements: str = Field(min_length=10, max_length=4000)
 
 
-def _sandbox_files() -> list[str]:
+WEB_PREFIX = "web/"
+WEB_PROJECT_FILES = ("package.json", "tsconfig.json", "next.config.ts", "postcss.config.js", "tailwind.config.js")
+
+
+def _backend_files() -> list[str]:
     if not SANDBOX_DIR.exists():
         return []
     return sorted(p.name for p in SANDBOX_DIR.iterdir() if p.is_file())
+
+
+def _all_files() -> list[str]:
+    return _backend_files() + [WEB_PREFIX + name for name in list_source_files()]
 
 
 def _run_or_404(run_id: str) -> Run:
@@ -83,24 +92,34 @@ def stream_events(run_id: str) -> StreamingResponse:
     )
 
 
+@app.get("/api/preview")
+def preview_status() -> dict[str, str | bool]:
+    return {"url": PREVIEW_URL, "running": preview.running}
+
+
 @app.get("/api/files")
 def list_files() -> list[str]:
-    return _sandbox_files()
+    return _all_files()
 
 
-@app.get("/api/files/{name}")
+@app.get("/api/files/{name:path}")
 def read_file(name: str) -> Response:
-    if name not in _sandbox_files():
+    if name not in _all_files():
         raise HTTPException(404, "No such file")
-    return Response((SANDBOX_DIR / name).read_text(encoding="utf-8"), media_type="text/plain; charset=utf-8")
+    path = WEB_DIR / name.removeprefix(WEB_PREFIX) if name.startswith(WEB_PREFIX) else SANDBOX_DIR / name
+    return Response(path.read_text(encoding="utf-8"), media_type="text/plain; charset=utf-8")
 
 
 @app.get("/api/download")
 def download() -> Response:
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
-        for name in _sandbox_files():
-            archive.write(SANDBOX_DIR / name, name)
+        for name in _backend_files():
+            archive.write(SANDBOX_DIR / name, f"backend/{name}")
+        for name in list_source_files():
+            archive.write(WEB_DIR / name, f"frontend/{name}")
+        for name in WEB_PROJECT_FILES:
+            archive.write(WEB_DIR / name, f"frontend/{name}")
     return Response(
         buffer.getvalue(),
         media_type="application/zip",
