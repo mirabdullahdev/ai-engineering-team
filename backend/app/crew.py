@@ -9,6 +9,9 @@ from crewai.project import CrewBase, agent, crew, task
 from app.tools.sandbox import sandbox_tools
 
 CONFIG_DIR = Path(__file__).parent / "config"
+FIX_TASK = "fix_task"
+
+Callback = Callable[[Any], None] | None
 
 
 def load_team() -> list[dict[str, str]]:
@@ -16,16 +19,17 @@ def load_team() -> list[dict[str, str]]:
     return [{"key": key, "role": value["role"].strip()} for key, value in config.items()]
 
 
+def load_task_order() -> list[tuple[str, str]]:
+    config = yaml.safe_load((CONFIG_DIR / "tasks.yaml").read_text(encoding="utf-8"))
+    return [(name, cfg["agent"]) for name, cfg in config.items() if name != FIX_TASK]
+
+
 @CrewBase
 class EngineeringTeam:
     agents_config = "config/agents.yaml"
     tasks_config = "config/tasks.yaml"
 
-    def __init__(
-        self,
-        step_callback: Callable[[Any], None] | None = None,
-        task_callback: Callable[[Any], None] | None = None,
-    ) -> None:
+    def __init__(self, step_callback: Callback = None, task_callback: Callback = None) -> None:
         self.step_callback = step_callback
         self.task_callback = task_callback
 
@@ -37,6 +41,10 @@ class EngineeringTeam:
     def backend_engineer(self) -> Agent:
         return Agent(config=self.agents_config["backend_engineer"], tools=sandbox_tools, verbose=True)
 
+    @agent
+    def test_engineer(self) -> Agent:
+        return Agent(config=self.agents_config["test_engineer"], tools=sandbox_tools, verbose=True)
+
     @task
     def design_task(self) -> Task:
         return Task(config=self.tasks_config["design_task"])
@@ -45,11 +53,33 @@ class EngineeringTeam:
     def code_task(self) -> Task:
         return Task(config=self.tasks_config["code_task"])
 
+    @task
+    def test_task(self) -> Task:
+        return Task(config=self.tasks_config["test_task"])
+
     @crew
     def crew(self) -> Crew:
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
+            process=Process.sequential,
+            step_callback=self.step_callback,
+            task_callback=self.task_callback,
+            verbose=True,
+        )
+
+    def fix_crew(self) -> Crew:
+        fix = self.tasks_config[FIX_TASK]
+        engineer = self.backend_engineer()
+        return Crew(
+            agents=[engineer],
+            tasks=[
+                Task(
+                    description=fix["description"],
+                    expected_output=fix["expected_output"],
+                    agent=engineer,
+                )
+            ],
             process=Process.sequential,
             step_callback=self.step_callback,
             task_callback=self.task_callback,

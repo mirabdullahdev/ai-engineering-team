@@ -7,10 +7,10 @@ design_task:
 
     Output a markdown document with these sections:
     1. Overview: the system in three sentences.
-    2. Files: every file to be created.
+    2. Files: every source file to be created. Do not list test files; the test engineer writes those.
     3. Backend interface: each class and function with a typed signature, a one-line contract,
        validation rules, and the exceptions raised.
-    4. Test plan: the behaviours and edge cases to cover.
+    4. Test plan: the behaviours and edge cases the test engineer must cover.
 
     Do not write implementation code, only signatures and contracts.
   expected_output: >
@@ -24,11 +24,44 @@ code_task:
     Requirements:
     {requirements}
 
-    Write the modules with your sandbox tools, then run a smoke script that exercises the main flows
-    and at least two error paths. Fix any failure before finishing.
+    Write the modules with your sandbox tools. Then write and run demo.py, a script that exercises the
+    main flows and at least two error paths. Fix any failure before finishing.
   expected_output: >
-    The backend module(s) saved in the sandbox, matching the design's public interface, with a
-    successful smoke run.
+    The backend module(s) and demo.py saved in the sandbox, matching the design's public interface,
+    with a successful demo run.
   agent: backend_engineer
   context:
     - design_task
+
+test_task:
+  description: >
+    Write and run unit tests for the backend, fixing backend defects until every test passes.
+
+    Requirements:
+    {requirements}
+
+    Cover the test plan from the design. Finish with a markdown summary stating the number of tests,
+    the result, the behaviours covered, and any backend defects you fixed.
+  expected_output: >
+    Passing test files named test_*.py saved in the sandbox, and a markdown summary of the results.
+  agent: test_engineer
+  context:
+    - design_task
+    - code_task
+
+fix_task:
+  description: >
+    The test suite for this project is failing. Fix the backend so every test passes.
+
+    Requirements:
+    {requirements}
+
+    Current test output:
+    {failures}
+
+    Read the failing tests and the backend source, fix real defects in the backend, and run the
+    failing test files again to confirm. Never edit a test to make it pass unless the test itself
+    contradicts the requirements.
+  expected_output: >
+    The backend fixed in the sandbox, with the previously failing tests now passing.
+  agent: backend_engineer

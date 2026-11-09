@@ -74,9 +74,9 @@ export default function Home() {
                 </span>
               )}
               {state.status === "finished" && (
-                <span className="flex items-center gap-1.5 text-emerald-400">
+                <span className={`flex items-center gap-1.5 ${state.testsPassed ? "text-emerald-400" : "text-amber-300"}`}>
                   <CircleCheck className="size-3.5" />
-                  Build complete
+                  {state.testsPassed ? "Build complete, tests passing" : "Build finished with failing tests"}
                 </span>
               )}
             </div>

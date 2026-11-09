@@ -24,6 +24,26 @@ def _clean_env() -> dict[str, str]:
     return {k: v for k, v in os.environ.items() if not any(m in k.upper() for m in SECRET_MARKERS)}
 
 
+def _execute(arguments: list[str]) -> tuple[int, str, str]:
+    try:
+        result = subprocess.run(
+            [str(INTERPRETER), "-E", "-s", "-X", "utf8", *arguments],
+            cwd=SANDBOX_DIR,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=EXEC_TIMEOUT_SECONDS,
+            env=_clean_env(),
+        )
+    except subprocess.TimeoutExpired:
+        return -1, "", f"Timed out after {EXEC_TIMEOUT_SECONDS} seconds."
+    return result.returncode, result.stdout, result.stderr
+
+
+def _combine(stdout: str, stderr: str) -> str:
+    return "\n".join(part for part in (stdout, stderr) if part).strip()[-4000:]
+
+
 def _resolve(filename: str) -> Path | None:
     if not filename or filename.startswith(".") or "/" in filename or "\\" in filename:
         return None
@@ -68,27 +88,14 @@ def run_sandbox_python(filename: str) -> str:
     if path is None or not path.is_file():
         return f"No such file in the sandbox: {filename}"
     emit("tool", tool="run_python", detail=filename)
-    try:
-        result = subprocess.run(
-            [str(INTERPRETER), "-E", "-s", "-X", "utf8", filename],
-            cwd=SANDBOX_DIR,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=EXEC_TIMEOUT_SECONDS,
-            env=_clean_env(),
-        )
-    except subprocess.TimeoutExpired:
-        message = f"Timed out after {EXEC_TIMEOUT_SECONDS} seconds."
-        emit("exec", file=filename, code=-1, output=message)
-        return message
-    output = "\n".join(part for part in (result.stdout, result.stderr) if part).strip()
-    emit("exec", file=filename, code=result.returncode, output=output[-4000:])
-    return (
-        f"Exit code: {result.returncode}\n\n"
-        f"--- stdout ---\n{result.stdout or '(empty)'}\n\n"
-        f"--- stderr ---\n{result.stderr or '(empty)'}"
-    )
+    code, stdout, stderr = _execute([filename])
+    emit("exec", file=filename, code=code, output=_combine(stdout, stderr))
+    return f"Exit code: {code}\n\n--- stdout ---\n{stdout or '(empty)'}\n\n--- stderr ---\n{stderr or '(empty)'}"
+
+
+def run_test_suite() -> tuple[int, str]:
+    code, stdout, stderr = _execute(["-m", "unittest", "discover", "-p", "test*.py"])
+    return code, _combine(stdout, stderr)
 
 
 sandbox_tools = [list_sandbox_files, read_sandbox_file, write_sandbox_file, run_sandbox_python]
