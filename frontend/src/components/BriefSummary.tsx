@@ -22,7 +22,7 @@ export function BriefSummary({ requirements, running, onReset }: Props) {
           </button>
         )}
       </div>
-      <p className="line-clamp-4 text-sm leading-relaxed text-ink/80">{requirements}</p>
+      <p className="line-clamp-3 text-sm leading-relaxed text-ink/80">{requirements}</p>
     </section>
   );
 }

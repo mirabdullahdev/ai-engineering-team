@@ -78,8 +78,8 @@ export default function Home() {
             A small team of engineers, on demand.
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-balance text-center text-base leading-relaxed text-muted">
-            Tell the team what you need. A lead designs it, a backend engineer builds it, and a test engineer proves it works,
-            while you watch every step.
+            Tell the team what you need. A lead designs it, engineers build the backend and the interface, and a test engineer
+            proves it works, while you watch the app take shape.
           </p>
 
           <div className="mt-10">
@@ -96,7 +96,7 @@ export default function Home() {
             </p>
           )}
 
-          <ul className="mt-14 grid grid-cols-1 gap-6 border-t border-line pt-8 sm:grid-cols-3">
+          <ul className="mt-14 grid grid-cols-1 gap-6 border-t border-line pt-8 sm:grid-cols-2 lg:grid-cols-4">
             {team.map((member) => {
               const style = agentStyle(member.key);
               return (
@@ -119,7 +119,7 @@ export default function Home() {
     <>
       {header}
       <main className="mx-auto grid max-w-[1400px] gap-5 px-6 pb-8 lg:h-[calc(100vh-5.5rem)] lg:grid-cols-[380px_1fr]">
-        <div className="flex min-h-0 flex-col gap-4">
+        <div className="flex min-h-0 flex-col gap-4 lg:overflow-y-auto">
           <BriefSummary requirements={brief} running={running} onReset={reset} />
           <Pipeline team={team} statuses={state.agents} />
           <ActivityFeed feed={state.feed} running={running} />
@@ -129,9 +129,13 @@ export default function Home() {
           <div className="flex min-h-6 items-center justify-between text-xs">
             <span className="text-muted">
               {state.status === "finished" ? (
-                <span className={`flex items-center gap-1.5 font-medium ${state.testsPassed ? "text-forest" : "text-terracotta"}`}>
+                <span className={`flex items-center gap-1.5 font-medium ${state.testsPassed && state.webOk ? "text-forest" : "text-terracotta"}`}>
                   <CircleCheck className="size-3.5" />
-                  {state.testsPassed ? "Build complete, all tests passing" : "Build finished with failing tests"}
+                  {state.testsPassed && state.webOk
+                    ? "Build complete, tests passing, app running"
+                    : !state.testsPassed
+                      ? "Build finished with failing tests"
+                      : "Build finished, the app still has errors"}
                 </span>
               ) : (
                 running && "Building…"
@@ -149,7 +153,7 @@ export default function Home() {
           </div>
           {errorBanner}
           <div className="min-h-0 flex-1">
-            <Workspace files={state.files} executions={state.executions} finished={state.status === "finished"} />
+            <Workspace files={state.files} executions={state.executions} previewUrl={state.previewUrl} finished={state.status === "finished"} />
           </div>
         </div>
       </main>

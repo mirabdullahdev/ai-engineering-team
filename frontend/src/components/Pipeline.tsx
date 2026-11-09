@@ -23,7 +23,7 @@ export function Pipeline({ team, statuses }: Props) {
         const Icon = style.icon;
         const last = index === team.length - 1;
         return (
-          <li key={member.key} className="relative flex gap-3.5 pb-5 last:pb-0">
+          <li key={member.key} className="relative flex gap-3.5 pb-4 last:pb-0">
             {!last && (
               <span
                 aria-hidden
@@ -44,8 +44,7 @@ export function Pipeline({ team, statuses }: Props) {
                 <h3 className="text-sm font-semibold">{style.name}</h3>
                 <span className="text-xs text-muted">{member.role}</span>
               </div>
-              <p className="mt-0.5 text-xs leading-snug text-muted">{style.blurb}</p>
-              <p className="mt-1.5 text-[11px] font-medium uppercase tracking-[0.12em]" style={{ color: status === "idle" ? "#a8a396" : style.color }}>
+              <p className="mt-0.5 text-[11px] font-medium uppercase tracking-[0.12em]" style={{ color: status === "idle" ? "#a8a396" : style.color }}>
                 {STATUS_LABEL[status]}
                 {status === "working" && <span className="ml-1 inline-block animate-pulse">…</span>}
               </p>

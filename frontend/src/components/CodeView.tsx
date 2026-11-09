@@ -1,18 +1,34 @@
 "use client";
 
 import hljs from "highlight.js/lib/core";
+import css from "highlight.js/lib/languages/css";
 import python from "highlight.js/lib/languages/python";
+import typescript from "highlight.js/lib/languages/typescript";
 import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 
 hljs.registerLanguage("python", python);
+hljs.registerLanguage("typescript", typescript);
+hljs.registerLanguage("css", css);
+
+function languageOf(name: string): string | null {
+  if (name.endsWith(".py")) return "python";
+  if (name.endsWith(".ts") || name.endsWith(".tsx")) return "typescript";
+  if (name.endsWith(".css")) return "css";
+  return null;
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
 export function CodeView({ name, content }: { name: string; content: string }) {
   const isMarkdown = name.endsWith(".md");
-  const html = useMemo(
-    () => (isMarkdown ? "" : hljs.highlight(content, { language: "python", ignoreIllegals: true }).value),
-    [content, isMarkdown],
-  );
+  const html = useMemo(() => {
+    if (isMarkdown) return "";
+    const language = languageOf(name);
+    return language ? hljs.highlight(content, { language, ignoreIllegals: true }).value : escapeHtml(content);
+  }, [content, isMarkdown, name]);
 
   if (isMarkdown) {
     return (
