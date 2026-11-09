@@ -19,6 +19,12 @@ export function RequirementsPanel({ onRun }: Props) {
         id="requirements"
         value={requirements}
         onChange={(event) => setRequirements(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+            event.preventDefault();
+            if (ready) onRun(requirements);
+          }
+        }}
         maxLength={4000}
         rows={5}
         placeholder="Describe the software you need, in plain English. Include the rules that matter."
